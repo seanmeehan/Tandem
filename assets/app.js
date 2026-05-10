@@ -9,7 +9,11 @@ const sequencers = {}; // 'a' | 'b' → Sequencer
 const playBtn = document.getElementById("play");
 const tempoInput = document.getElementById("tempo");
 const tempoDisplay = document.getElementById("tempo-display");
+const swingInput = document.getElementById("swing");
+const swingDisplay = document.getElementById("swing-display");
 const statusEl = document.getElementById("status");
+
+Tone.Transport.swingSubdivision = "16n";
 
 // Build a grid: 8 columns (steps) × 8 rows (notes).
 // Each cell stores its step/note via dataset; toggled state is reflected
@@ -130,4 +134,10 @@ tempoInput.addEventListener("input", () => {
   const bpm = Number(tempoInput.value);
   Tone.Transport.bpm.value = bpm;
   tempoDisplay.textContent = bpm;
+});
+
+swingInput.addEventListener("input", () => {
+  const s = Number(swingInput.value);
+  Tone.Transport.swing = s;
+  swingDisplay.textContent = `${Math.round(s * 100)}%`;
 });
