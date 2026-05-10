@@ -65,18 +65,34 @@ function attachPlayhead(playerKey) {
   });
 }
 
+function applyParam(seq, param, value) {
+  if (param === "filter") seq.setFilter(Number(value));
+  else if (param === "res") seq.setResonance(Number(value));
+  else if (param === "decay") seq.setDecay(Number(value));
+  else if (param === "wave") seq.setWave(value);
+  else if (param === "vol") seq.setVolumeDb(Number(value));
+  else if (param === "glide") seq.setGlide(!!value);
+  else if (param === "crush") seq.setCrush(!!value);
+  else if (param === "delay") seq.setDelay(!!value);
+}
+
 function wireControls(playerKey) {
   const root = document.getElementById(`player-${playerKey}`);
   root.querySelectorAll(".knob, .wave").forEach((el) => {
     el.addEventListener("input", () => {
       const seq = sequencers[playerKey];
       if (!seq) return;
-      const param = el.dataset.param;
       const v = el.tagName === "SELECT" ? el.value : Number(el.value);
-      if (param === "filter") seq.setFilter(v);
-      else if (param === "decay") seq.setDecay(v);
-      else if (param === "wave") seq.setWave(v);
-      else if (param === "vol") seq.setVolumeDb(v);
+      applyParam(seq, el.dataset.param, v);
+    });
+  });
+  root.querySelectorAll(".toggle").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const on = !btn.classList.contains("on");
+      btn.classList.toggle("on", on);
+      const seq = sequencers[playerKey];
+      if (!seq) return;
+      applyParam(seq, btn.dataset.param, on);
     });
   });
 }
@@ -86,12 +102,11 @@ function applyInitialControls(playerKey) {
   if (!seq) return;
   const root = document.getElementById(`player-${playerKey}`);
   root.querySelectorAll(".knob, .wave").forEach((el) => {
-    const param = el.dataset.param;
     const v = el.tagName === "SELECT" ? el.value : Number(el.value);
-    if (param === "filter") seq.setFilter(v);
-    else if (param === "decay") seq.setDecay(v);
-    else if (param === "wave") seq.setWave(v);
-    else if (param === "vol") seq.setVolumeDb(v);
+    applyParam(seq, el.dataset.param, v);
+  });
+  root.querySelectorAll(".toggle").forEach((btn) => {
+    applyParam(seq, btn.dataset.param, btn.classList.contains("on"));
   });
 }
 

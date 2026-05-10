@@ -21,8 +21,11 @@ export class Sequencer {
     this.stepListeners = new Set();
 
     this.filter = new Tone.Filter({ type: "lowpass", frequency: 2000, Q: 1.5 });
+    this.crusher = new Tone.BitCrusher({ bits: 4, wet: 0 });
+    this.delayFx = new Tone.FeedbackDelay({ delayTime: "8n", feedback: 0.4, wet: 0 });
     this.gain = new Tone.Gain(Tone.dbToGain(-10));
     this.voice = new Tone.MonoSynth({
+      portamento: 0,
       oscillator: { type: "sawtooth" },
       envelope: { attack: 0.005, decay: 0.25, sustain: 0, release: 0.08 },
       filterEnvelope: {
@@ -30,7 +33,7 @@ export class Sequencer {
         baseFrequency: 200, octaves: 3,
       },
     });
-    this.voice.chain(this.filter, this.gain, Tone.Destination);
+    this.voice.chain(this.filter, this.crusher, this.delayFx, this.gain, Tone.Destination);
 
     this.loop = new Tone.Loop((time) => this._tick(time), "16n");
     this.loop.start(0);
@@ -63,9 +66,13 @@ export class Sequencer {
   }
 
   setFilter(hz) { this.filter.frequency.rampTo(hz, 0.05); }
+  setResonance(q) { this.filter.Q.rampTo(q, 0.05); }
   setDecay(seconds) { this.voice.envelope.decay = seconds; }
   setWave(type) { this.voice.oscillator.type = type; }
   setVolumeDb(db) { this.gain.gain.rampTo(Tone.dbToGain(db), 0.05); }
+  setGlide(on) { this.voice.portamento = on ? 0.08 : 0; }
+  setCrush(on) { this.crusher.wet.rampTo(on ? 0.8 : 0, 0.04); }
+  setDelay(on) { this.delayFx.wet.rampTo(on ? 0.35 : 0, 0.04); }
 }
 
 export const SEQUENCER_DIMS = { STEPS, NOTE_ROWS };

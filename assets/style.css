@@ -125,6 +125,23 @@ body {
   text-transform: uppercase;
 }
 
+.toggle {
+  background: rgba(0,0,0,0.18);
+  color: var(--text-dark);
+  border: 1px solid var(--border);
+  padding: 5px 12px;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  opacity: 0.7;
+}
+.toggle:hover { opacity: 1; }
+.toggle.on { background: var(--text-dark); color: var(--text-light); opacity: 1; }
+
 #transport {
   display: flex;
   gap: 18px;
