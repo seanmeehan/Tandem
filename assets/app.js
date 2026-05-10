@@ -11,7 +11,10 @@ const tempoInput = document.getElementById("tempo");
 const tempoDisplay = document.getElementById("tempo-display");
 const swingInput = document.getElementById("swing");
 const swingDisplay = document.getElementById("swing-display");
+const recordBtn = document.getElementById("record");
 const statusEl = document.getElementById("status");
+
+let recorder = null;
 
 Tone.Transport.swingSubdivision = "16n";
 
@@ -154,4 +157,34 @@ swingInput.addEventListener("input", () => {
   const s = Number(swingInput.value);
   Tone.Transport.swing = s;
   swingDisplay.textContent = `${Math.round(s * 100)}%`;
+});
+
+recordBtn.addEventListener("click", async () => {
+  if (!started) {
+    alert("Press Play first to start audio.");
+    return;
+  }
+  if (!recorder) {
+    recorder = new Tone.Recorder();
+    // Tap each sequencer's output gain in parallel with Destination
+    sequencers.a.gain.connect(recorder);
+    sequencers.b.gain.connect(recorder);
+  }
+  if (recorder.state === "started") {
+    const blob = await recorder.stop();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `tandem-${Date.now()}.webm`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    recordBtn.textContent = "● Record";
+    recordBtn.classList.remove("recording");
+  } else {
+    recorder.start();
+    recordBtn.textContent = "■ Save";
+    recordBtn.classList.add("recording");
+  }
 });
