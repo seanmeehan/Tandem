@@ -25,11 +25,13 @@ export class Sequencer {
     this.crusher = new Tone.BitCrusher({ bits: 4, wet: 0 });
     this.envFilter = new Tone.AutoFilter({
       frequency: "2n",
-      baseFrequency: 150,
-      octaves: 4,
+      baseFrequency: 200,
+      octaves: 2.5,
       wet: 0,
+      filter: { type: "lowpass", Q: 0.6, rolloff: -12 },
     }).start();
     this.gain = new Tone.Gain(Tone.dbToGain(-10));
+    this.limiter = new Tone.Limiter(-1);
     this.voice = new Tone.MonoSynth({
       portamento: 0,
       oscillator: { type: "sawtooth" },
@@ -39,7 +41,7 @@ export class Sequencer {
         baseFrequency: 200, octaves: 3,
       },
     });
-    this.voice.chain(this.filter, this.crusher, this.envFilter, this.gain, Tone.Destination);
+    this.voice.chain(this.filter, this.crusher, this.envFilter, this.gain, this.limiter, Tone.Destination);
 
     this.loop = new Tone.Loop((time) => this._tick(time), "16n");
     this.loop.start(0);

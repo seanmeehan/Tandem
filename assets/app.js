@@ -190,8 +190,9 @@ recordBtn.addEventListener("click", async () => {
   if (!recorder) {
     recorder = new Tone.Recorder();
     // Tap each sequencer's output gain in parallel with Destination
-    sequencers.a.gain.connect(recorder);
-    sequencers.b.gain.connect(recorder);
+    // Tap each sequencer's limiter so we record the same signal we hear
+    sequencers.a.limiter.connect(recorder);
+    sequencers.b.limiter.connect(recorder);
   }
   if (recorder.state === "started") {
     const blob = await recorder.stop();
