@@ -73,7 +73,6 @@ function applyParam(seq, param, value) {
   else if (param === "vol") seq.setVolumeDb(Number(value));
   else if (param === "glide") seq.setGlide(!!value);
   else if (param === "crush") seq.setCrush(!!value);
-  else if (param === "delay") seq.setDelay(!!value);
 }
 
 function wireControls(playerKey) {
