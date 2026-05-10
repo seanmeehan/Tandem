@@ -16,6 +16,7 @@
       <div class="controls">
         <label>Filter <input class="knob" type="range" min="100" max="8000" step="10" value="2000" data-param="filter"></label>
         <label>Res <input class="knob" type="range" min="0.5" max="15" step="0.1" value="1.5" data-param="res"></label>
+        <label>Env <input class="knob" type="range" min="0" max="1" step="0.01" value="0" data-param="env"></label>
         <label>Decay <input class="knob" type="range" min="0.02" max="1.5" step="0.01" value="0.25" data-param="decay"></label>
         <label>Wave
           <select class="wave" data-param="wave">
@@ -42,6 +43,14 @@
         <input id="swing" type="range" min="0" max="0.66" step="0.01" value="0">
         <span id="swing-display">0%</span>
       </label>
+      <label>Steps
+        <select id="steps-count">
+          <option value="8" selected>8</option>
+          <option value="16">16</option>
+          <option value="24">24</option>
+          <option value="32">32</option>
+        </select>
+      </label>
       <span id="status">stopped</span>
     </section>
 
@@ -53,6 +62,7 @@
       <div class="controls">
         <label>Filter <input class="knob" type="range" min="100" max="8000" step="10" value="2000" data-param="filter"></label>
         <label>Res <input class="knob" type="range" min="0.5" max="15" step="0.1" value="1.5" data-param="res"></label>
+        <label>Env <input class="knob" type="range" min="0" max="1" step="0.01" value="0" data-param="env"></label>
         <label>Decay <input class="knob" type="range" min="0.02" max="1.5" step="0.01" value="0.25" data-param="decay"></label>
         <label>Wave
           <select class="wave" data-param="wave">

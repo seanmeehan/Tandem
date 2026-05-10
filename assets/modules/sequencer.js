@@ -8,20 +8,27 @@ import * as Tone from "tone";
 // top row the highest (so visually the high notes sit "up").
 const SCALE = ["C5", "B4", "A4", "G4", "F4", "E4", "D4", "C4"];
 
-const STEPS = 8;
+const DEFAULT_STEPS = 8;
 const NOTE_ROWS = SCALE.length;
 
 export class Sequencer {
   constructor(name, color) {
     this.name = name;
     this.color = color;
+    this.steps = DEFAULT_STEPS;
     // grid[step] = note index (0..NOTE_ROWS-1) or null
-    this.grid = Array(STEPS).fill(null);
+    this.grid = Array(this.steps).fill(null);
     this.currentStep = 0;
     this.stepListeners = new Set();
 
     this.filter = new Tone.Filter({ type: "lowpass", frequency: 2000, Q: 1.5 });
     this.crusher = new Tone.BitCrusher({ bits: 4, wet: 0 });
+    this.envFilter = new Tone.AutoFilter({
+      frequency: "2n",
+      baseFrequency: 150,
+      octaves: 4,
+      wet: 0,
+    }).start();
     this.gain = new Tone.Gain(Tone.dbToGain(-10));
     this.voice = new Tone.MonoSynth({
       portamento: 0,
@@ -32,7 +39,7 @@ export class Sequencer {
         baseFrequency: 200, octaves: 3,
       },
     });
-    this.voice.chain(this.filter, this.crusher, this.gain, Tone.Destination);
+    this.voice.chain(this.filter, this.crusher, this.envFilter, this.gain, Tone.Destination);
 
     this.loop = new Tone.Loop((time) => this._tick(time), "16n");
     this.loop.start(0);
@@ -47,7 +54,7 @@ export class Sequencer {
     Tone.Draw.schedule(() => {
       for (const fn of this.stepListeners) fn(step);
     }, time);
-    this.currentStep = (this.currentStep + 1) % STEPS;
+    this.currentStep = (this.currentStep + 1) % this.steps;
   }
 
   toggleCell(step, noteIdx) {
@@ -71,6 +78,18 @@ export class Sequencer {
   setVolumeDb(db) { this.gain.gain.rampTo(Tone.dbToGain(db), 0.05); }
   setGlide(on) { this.voice.portamento = on ? 0.08 : 0; }
   setCrush(on) { this.crusher.wet.rampTo(on ? 0.8 : 0, 0.04); }
+  setEnvFilter(amount) { this.envFilter.wet.rampTo(amount, 0.05); }
+
+  setSteps(n) {
+    if (n === this.steps) return;
+    if (n > this.grid.length) {
+      while (this.grid.length < n) this.grid.push(null);
+    } else {
+      this.grid.length = n;
+    }
+    this.steps = n;
+    if (this.currentStep >= n) this.currentStep = 0;
+  }
 }
 
-export const SEQUENCER_DIMS = { STEPS, NOTE_ROWS };
+export const SEQUENCER_DIMS = { DEFAULT_STEPS, NOTE_ROWS };
