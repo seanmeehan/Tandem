@@ -22,7 +22,15 @@ export class Sequencer {
     this.stepListeners = new Set();
 
     this.filter = new Tone.Filter({ type: "lowpass", frequency: 2000, Q: 1.5 });
-    this.crusher = new Tone.BitCrusher({ bits: 4, wet: 0 });
+    // Three flavors of distortion; only the selected one gets wet>0 when
+    // Crush is on. The others stay at wet=0 and pass signal through dry.
+    this.crushers = {
+      crush: new Tone.BitCrusher({ bits: 4, wet: 0 }),
+      drive: new Tone.Distortion({ distortion: 0.7, wet: 0 }),
+      fuzz:  new Tone.Chebyshev({ order: 40, wet: 0 }),
+    };
+    this.crushOn = false;
+    this.crushType = "crush";
     this.envFilter = new Tone.AutoFilter({
       frequency: "2n",
       baseFrequency: 200,
@@ -41,7 +49,16 @@ export class Sequencer {
         baseFrequency: 200, octaves: 3,
       },
     });
-    this.voice.chain(this.filter, this.crusher, this.envFilter, this.gain, this.limiter, Tone.Destination);
+    this.voice.chain(
+      this.filter,
+      this.crushers.crush,
+      this.crushers.drive,
+      this.crushers.fuzz,
+      this.envFilter,
+      this.gain,
+      this.limiter,
+      Tone.Destination
+    );
 
     this.loop = new Tone.Loop((time) => this._tick(time), "16n");
     this.loop.start(0);
@@ -79,7 +96,19 @@ export class Sequencer {
   setWave(type) { this.voice.oscillator.type = type; }
   setVolumeDb(db) { this.gain.gain.rampTo(Tone.dbToGain(db), 0.05); }
   setGlide(on) { this.voice.portamento = on ? 0.08 : 0; }
-  setCrush(on) { this.crusher.wet.rampTo(on ? 0.8 : 0, 0.04); }
+  setCrush(on) { this.crushOn = !!on; this._applyCrush(); }
+  setCrushType(type) {
+    if (!(type in this.crushers)) return;
+    this.crushType = type;
+    this._applyCrush();
+  }
+  _applyCrush() {
+    const wetByType = { crush: 0.8, drive: 0.65, fuzz: 0.5 };
+    for (const [name, fx] of Object.entries(this.crushers)) {
+      const target = (this.crushOn && name === this.crushType) ? wetByType[name] : 0;
+      fx.wet.rampTo(target, 0.04);
+    }
+  }
   setEnvFilter(amount) { this.envFilter.wet.rampTo(amount, 0.05); }
 
   setSteps(n) {

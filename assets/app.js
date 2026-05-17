@@ -89,6 +89,7 @@ function applyParam(seq, param, value) {
   else if (param === "vol") seq.setVolumeDb(Number(value));
   else if (param === "glide") seq.setGlide(!!value);
   else if (param === "crush") seq.setCrush(!!value);
+  else if (param === "crushType") seq.setCrushType(value);
 }
 
 function wireControls(playerKey) {
@@ -121,6 +122,7 @@ function wireControls(playerKey) {
 // narrow enough to stay pleasant. Vol is intentionally excluded so volume
 // never jumps unexpectedly.
 const WAVES = ["sawtooth", "square", "triangle", "sine"];
+const CRUSH_TYPES = ["crush", "drive", "fuzz"];
 function rand(min, max) { return min + Math.random() * (max - min); }
 function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
@@ -134,7 +136,8 @@ function randomizeSound(playerKey) {
     decay: +rand(0.08, 0.8).toFixed(2),
     wave: pick(WAVES),
     glide: Math.random() < 0.3,
-    crush: Math.random() < 0.2,
+    crush: Math.random() < 0.25,
+    crushType: pick(CRUSH_TYPES),
   };
 
   melodyControls.querySelectorAll(".knob, .wave").forEach((el) => {
