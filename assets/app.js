@@ -7,7 +7,8 @@ const { DEFAULT_STEPS, NOTE_ROWS } = SEQUENCER_DIMS;
 const { DRUM_ROWS } = DRUM_DIMS;
 const { NOTE_ROWS: BASS_ROWS } = BASS_DIMS;
 
-const MODE = new URLSearchParams(location.search).get("mode") === "toddler" ? "toddler" : "jam";
+const MODE_PARAM = new URLSearchParams(location.search).get("mode");
+const MODE = MODE_PARAM === "toddler" ? "toddler" : MODE_PARAM === "solo" ? "solo" : "jam";
 document.body.classList.add(`mode-${MODE}`);
 
 let started = false;
@@ -225,6 +226,37 @@ players.a.toggleBtn.addEventListener("click", () => {
 players.b.toggleBtn.addEventListener("click", () => {
   setPlayerView("b", playerView.b === "melody" ? "companion" : "melody");
 });
+
+// --- Solo mode: one section visible at a time, switcher in transport ------
+
+const playerASection = document.getElementById("player-a");
+const playerBSection = document.getElementById("player-b");
+
+function setSoloView(view) {
+  if (view === "melody") {
+    playerASection.hidden = false;
+    playerBSection.hidden = true;
+    setPlayerView("a", "melody");
+  } else if (view === "bass") {
+    playerASection.hidden = false;
+    playerBSection.hidden = true;
+    setPlayerView("a", "companion");
+  } else if (view === "drums") {
+    playerASection.hidden = true;
+    playerBSection.hidden = false;
+    setPlayerView("b", "companion");
+  }
+  document.querySelectorAll(".solo-tab").forEach((tab) => {
+    tab.classList.toggle("on", tab.dataset.soloView === view);
+  });
+}
+
+if (MODE === "solo") {
+  document.querySelectorAll(".solo-tab").forEach((tab) => {
+    tab.addEventListener("click", () => setSoloView(tab.dataset.soloView));
+  });
+  setSoloView("melody");
+}
 
 // --- Drums -----------------------------------------------------------------
 

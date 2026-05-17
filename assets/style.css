@@ -229,6 +229,32 @@ body {
   .drum-label { font-size: 9px; padding-right: 6px; letter-spacing: 0.5px; }
 }
 
+/* Solo mode: one section at a time, switcher in transport.
+   Toggle by adding ?mode=solo to the URL. */
+.solo-tabs { display: none; gap: 4px; }
+body.mode-solo .solo-tabs { display: inline-flex; }
+body.mode-solo .view-toggle { display: none; }
+body.mode-solo .player.rotated { transform: none; }
+
+#transport .solo-tab {
+  background: rgba(255,255,255,0.08);
+  color: var(--text-light);
+  border: 1px solid rgba(255,255,255,0.18);
+  padding: 6px 12px;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+}
+#transport .solo-tab:hover { background: rgba(255,255,255,0.16); }
+#transport .solo-tab.on { background: var(--text-light); color: var(--text-dark); }
+#transport .solo-tab[data-solo-view="melody"].on { background: var(--panel-a); }
+#transport .solo-tab[data-solo-view="bass"].on   { background: var(--panel-a); }
+#transport .solo-tab[data-solo-view="drums"].on  { background: var(--panel-b); }
+
 /* Toddler mode: just grids, big Play, and the 🎲 per player.
    Toggle by adding ?mode=toddler to the URL. */
 body.mode-toddler .controls > label,
