@@ -15,10 +15,8 @@ const sequencers = {}; // 'a' | 'b' → Sequencer
 const playheadUnsubs = {};
 let drums = null;
 let drumPlayheadUnsub = null;
-let drumsEnabled = false;
 let bass = null;
 let bassPlayheadUnsub = null;
-let bassEnabled = false;
 
 const playBtn = document.getElementById("play");
 const tempoInput = document.getElementById("tempo");
@@ -32,14 +30,12 @@ let recorder = null;
 
 Tone.Transport.swingSubdivision = "16n";
 
-// Build a grid: 8 columns (steps) × 8 rows (notes).
+// Build a grid: N columns (steps) × NOTE_ROWS rows (notes).
 // Each cell stores its step/note via dataset; toggled state is reflected
 // from the corresponding Sequencer.
 function buildGrid(gridEl, playerKey, steps = DEFAULT_STEPS) {
   gridEl.innerHTML = "";
   gridEl.style.gridTemplateColumns = `repeat(${steps}, 1fr)`;
-  // We iterate row-major so CSS Grid auto-flow places them correctly
-  // (rows top→bottom, columns left→right).
   for (let row = 0; row < NOTE_ROWS; row++) {
     for (let step = 0; step < steps; step++) {
       const cell = document.createElement("div");
@@ -97,7 +93,8 @@ function applyParam(seq, param, value) {
 
 function wireControls(playerKey) {
   const root = document.getElementById(`player-${playerKey}`);
-  root.querySelectorAll(".knob, .wave").forEach((el) => {
+  const melodyControls = root.querySelector(".melody-controls");
+  melodyControls.querySelectorAll(".knob, .wave").forEach((el) => {
     el.addEventListener("input", () => {
       const seq = sequencers[playerKey];
       if (!seq) return;
@@ -105,7 +102,7 @@ function wireControls(playerKey) {
       applyParam(seq, el.dataset.param, v);
     });
   });
-  root.querySelectorAll(".toggle").forEach((btn) => {
+  melodyControls.querySelectorAll(".toggle").forEach((btn) => {
     btn.addEventListener("click", () => {
       const on = !btn.classList.contains("on");
       btn.classList.toggle("on", on);
@@ -114,7 +111,7 @@ function wireControls(playerKey) {
       applyParam(seq, btn.dataset.param, on);
     });
   });
-  const randomBtn = root.querySelector('.randomize');
+  const randomBtn = melodyControls.querySelector(".randomize");
   if (randomBtn) {
     randomBtn.addEventListener("click", () => randomizeSound(playerKey));
   }
@@ -129,6 +126,7 @@ function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
 function randomizeSound(playerKey) {
   const root = document.getElementById(`player-${playerKey}`);
+  const melodyControls = root.querySelector(".melody-controls");
   const newValues = {
     filter: Math.round(rand(600, 6000)),
     res: +rand(0.8, 6).toFixed(2),
@@ -139,11 +137,11 @@ function randomizeSound(playerKey) {
     crush: Math.random() < 0.2,
   };
 
-  root.querySelectorAll(".knob, .wave").forEach((el) => {
+  melodyControls.querySelectorAll(".knob, .wave").forEach((el) => {
     if (!(el.dataset.param in newValues)) return;
     el.value = newValues[el.dataset.param];
   });
-  root.querySelectorAll(".toggle").forEach((btn) => {
+  melodyControls.querySelectorAll(".toggle").forEach((btn) => {
     const p = btn.dataset.param;
     if (!(p in newValues)) return;
     btn.classList.toggle("on", newValues[p]);
@@ -155,11 +153,11 @@ function randomizeSound(playerKey) {
     applyParam(seq, param, value);
   }
 
-  const btn = root.querySelector('.randomize');
+  const btn = melodyControls.querySelector(".randomize");
   if (btn) {
-    btn.classList.remove('rolling');
+    btn.classList.remove("rolling");
     void btn.offsetWidth;
-    btn.classList.add('rolling');
+    btn.classList.add("rolling");
   }
 }
 
@@ -167,55 +165,67 @@ function applyInitialControls(playerKey) {
   const seq = sequencers[playerKey];
   if (!seq) return;
   const root = document.getElementById(`player-${playerKey}`);
-  root.querySelectorAll(".knob, .wave").forEach((el) => {
+  const melodyControls = root.querySelector(".melody-controls");
+  melodyControls.querySelectorAll(".knob, .wave").forEach((el) => {
     const v = el.tagName === "SELECT" ? el.value : Number(el.value);
     applyParam(seq, el.dataset.param, v);
   });
-  root.querySelectorAll(".toggle").forEach((btn) => {
+  melodyControls.querySelectorAll(".toggle").forEach((btn) => {
     applyParam(seq, btn.dataset.param, btn.classList.contains("on"));
   });
 }
 
 const stepsSelect = document.getElementById("steps-count");
 
-// Build grids up-front so users can program patterns before pressing play
-// (their clicks just won't make sound yet).
+// Build all four grids up-front so users can program patterns before pressing
+// play (their clicks just won't make sound yet).
 buildGrid(document.querySelector('.grid[data-player="a"]'), "a", Number(stepsSelect.value));
 buildGrid(document.querySelector('.grid[data-player="b"]'), "b", Number(stepsSelect.value));
 wireControls("a");
 wireControls("b");
 
-stepsSelect.addEventListener("change", () => {
-  const n = Number(stepsSelect.value);
-  for (const key of ["a", "b"]) {
-    const seq = sequencers[key];
-    if (seq) seq.setSteps(n);
-    const gridEl = document.querySelector(`.grid[data-player="${key}"]`);
-    buildGrid(gridEl, key, n);
-    if (seq) {
-      renderCells(key);
-      attachPlayhead(key);
-    }
-  }
-  if (drums) drums.setSteps(n);
-  if (drumsEnabled) {
-    buildDrumGrid(n);
-    renderDrumCells();
-    attachDrumPlayhead();
-  }
-  if (bass) bass.setSteps(n);
-  if (bassEnabled) {
-    buildBassGrid(n);
-    renderBassCells();
-    attachBassPlayhead();
-  }
+// --- View toggle: each player slot swaps between melody and its companion --
+// All four sequencers always play; the toggle just changes what's on screen.
+
+const players = {
+  a: {
+    melodyGrid: document.querySelector('.grid[data-player="a"]'),
+    companionGrid: document.getElementById("bass-grid"),
+    melodyControls: document.querySelector('#player-a .melody-controls'),
+    companionControls: document.querySelector('#player-a .companion-controls'),
+    toggleBtn: document.getElementById("bass-toggle"),
+  },
+  b: {
+    melodyGrid: document.querySelector('.grid[data-player="b"]'),
+    companionGrid: document.getElementById("drum-grid"),
+    melodyControls: document.querySelector('#player-b .melody-controls'),
+    companionControls: document.querySelector('#player-b .companion-controls'),
+    toggleBtn: document.getElementById("drum-toggle"),
+  },
+};
+const playerView = { a: "melody", b: "melody" };
+
+function setPlayerView(playerKey, mode) {
+  const p = players[playerKey];
+  const companion = mode === "companion";
+  p.melodyGrid.hidden = companion;
+  p.companionGrid.hidden = !companion;
+  p.melodyControls.hidden = companion;
+  p.companionControls.hidden = !companion;
+  p.toggleBtn.classList.toggle("on", companion);
+  playerView[playerKey] = mode;
+}
+
+players.a.toggleBtn.addEventListener("click", () => {
+  setPlayerView("a", playerView.a === "melody" ? "companion" : "melody");
+});
+players.b.toggleBtn.addEventListener("click", () => {
+  setPlayerView("b", playerView.b === "melody" ? "companion" : "melody");
 });
 
 // --- Drums -----------------------------------------------------------------
 
 const drumGridEl = document.getElementById("drum-grid");
-const drumPanel = document.getElementById("player-drums");
-const drumToggleBtn = document.getElementById("drum-toggle");
 const drumVolInput = document.querySelector(".drum-knob");
 const drumClearBtn = document.getElementById("drum-clear");
 
@@ -244,8 +254,7 @@ function buildDrumGrid(steps) {
 
 function renderDrumCells() {
   if (!drums) return;
-  const cells = drumGridEl.querySelectorAll(".drum-cell");
-  cells.forEach((cell) => {
+  drumGridEl.querySelectorAll(".drum-cell").forEach((cell) => {
     const step = Number(cell.dataset.step);
     const row = Number(cell.dataset.row);
     cell.classList.toggle("on", drums.isOn(step, row));
@@ -264,24 +273,6 @@ function attachDrumPlayhead() {
   });
 }
 
-function setDrumsEnabled(on) {
-  drumsEnabled = on;
-  drumPanel.hidden = !on;
-  drumToggleBtn.classList.toggle("on", on);
-  if (drums) drums.setMuted(!on);
-  if (on) {
-    if (!drumGridEl.children.length) {
-      buildDrumGrid(Number(stepsSelect.value));
-    }
-    if (drums) {
-      renderDrumCells();
-      attachDrumPlayhead();
-    }
-  }
-}
-
-drumToggleBtn.addEventListener("click", () => setDrumsEnabled(!drumsEnabled));
-
 drumVolInput.addEventListener("input", () => {
   if (drums) drums.setVolumeDb(Number(drumVolInput.value));
 });
@@ -295,8 +286,6 @@ drumClearBtn.addEventListener("click", () => {
 // --- Bass ------------------------------------------------------------------
 
 const bassGridEl = document.getElementById("bass-grid");
-const bassPanel = document.getElementById("player-bass");
-const bassToggleBtn = document.getElementById("bass-toggle");
 const bassClearBtn = document.getElementById("bass-clear");
 const bassKnobs = document.querySelectorAll(".bass-knob");
 
@@ -350,24 +339,6 @@ function applyBassControls() {
   });
 }
 
-function setBassEnabled(on) {
-  bassEnabled = on;
-  bassPanel.hidden = !on;
-  bassToggleBtn.classList.toggle("on", on);
-  if (bass) bass.setMuted(!on);
-  if (on) {
-    if (!bassGridEl.children.length) {
-      buildBassGrid(Number(stepsSelect.value));
-    }
-    if (bass) {
-      renderBassCells();
-      attachBassPlayhead();
-    }
-  }
-}
-
-bassToggleBtn.addEventListener("click", () => setBassEnabled(!bassEnabled));
-
 bassKnobs.forEach((el) => {
   el.addEventListener("input", () => {
     if (!bass) return;
@@ -381,6 +352,37 @@ bassClearBtn.addEventListener("click", () => {
   if (!bass) return;
   bass.clear();
   renderBassCells();
+});
+
+// Build companion grids up-front too — they're always available, the toggle
+// just controls which is visible.
+buildBassGrid(Number(stepsSelect.value));
+buildDrumGrid(Number(stepsSelect.value));
+
+stepsSelect.addEventListener("change", () => {
+  const n = Number(stepsSelect.value);
+  for (const key of ["a", "b"]) {
+    const seq = sequencers[key];
+    if (seq) seq.setSteps(n);
+    const gridEl = document.querySelector(`.grid[data-player="${key}"]`);
+    buildGrid(gridEl, key, n);
+    if (seq) {
+      renderCells(key);
+      attachPlayhead(key);
+    }
+  }
+  if (drums) drums.setSteps(n);
+  buildDrumGrid(n);
+  if (drums) {
+    renderDrumCells();
+    attachDrumPlayhead();
+  }
+  if (bass) bass.setSteps(n);
+  buildBassGrid(n);
+  if (bass) {
+    renderBassCells();
+    attachBassPlayhead();
+  }
 });
 
 playBtn.addEventListener("click", async () => {
@@ -397,24 +399,19 @@ playBtn.addEventListener("click", async () => {
     attachPlayhead("b");
     renderCells("a");
     renderCells("b");
+
     drums = new DrumMachine();
     drums.setSteps(initialSteps);
     drums.setVolumeDb(Number(drumVolInput.value));
-    drums.setMuted(!drumsEnabled);
-    if (drumsEnabled) {
-      if (!drumGridEl.children.length) buildDrumGrid(initialSteps);
-      attachDrumPlayhead();
-      renderDrumCells();
-    }
+    attachDrumPlayhead();
+    renderDrumCells();
+
     bass = new BassMachine();
     bass.setSteps(initialSteps);
     applyBassControls();
-    bass.setMuted(!bassEnabled);
-    if (bassEnabled) {
-      if (!bassGridEl.children.length) buildBassGrid(initialSteps);
-      attachBassPlayhead();
-      renderBassCells();
-    }
+    attachBassPlayhead();
+    renderBassCells();
+
     Tone.Transport.bpm.value = Number(tempoInput.value);
     started = true;
   }
@@ -451,8 +448,7 @@ recordBtn.addEventListener("click", async () => {
   }
   if (!recorder) {
     recorder = new Tone.Recorder();
-    // Tap each sequencer's output gain in parallel with Destination
-    // Tap each sequencer's limiter so we record the same signal we hear
+    // Tap each voice's limiter so we record the same signal we hear.
     sequencers.a.limiter.connect(recorder);
     sequencers.b.limiter.connect(recorder);
     if (drums) drums.limiter.connect(recorder);

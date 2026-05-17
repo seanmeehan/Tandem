@@ -22,7 +22,6 @@ export class DrumMachine {
     this.tracks = DRUM_ROWS.map(() => Array(this.steps).fill(false));
     this.currentStep = 0;
     this.stepListeners = new Set();
-    this.muted = false;
 
     this.gain = new Tone.Gain(Tone.dbToGain(-8));
     this.limiter = new Tone.Limiter(-1);
@@ -77,10 +76,8 @@ export class DrumMachine {
 
   _tick(time) {
     const step = this.currentStep;
-    if (!this.muted) {
-      for (let row = 0; row < DRUM_ROWS.length; row++) {
-        if (this.tracks[row][step]) this._trigger(DRUM_ROWS[row].key, time);
-      }
+    for (let row = 0; row < DRUM_ROWS.length; row++) {
+      if (this.tracks[row][step]) this._trigger(DRUM_ROWS[row].key, time);
     }
     Tone.Draw.schedule(() => {
       for (const fn of this.stepListeners) fn(step);
@@ -124,7 +121,6 @@ export class DrumMachine {
   }
 
   setVolumeDb(db) { this.gain.gain.rampTo(Tone.dbToGain(db), 0.05); }
-  setMuted(on) { this.muted = !!on; }
   clear() {
     for (const track of this.tracks) track.fill(false);
   }

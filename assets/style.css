@@ -55,6 +55,8 @@ body {
 .player-head {
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 }
 
 .player-label {
@@ -169,43 +171,43 @@ body {
   .randomize { width: 30px; height: 30px; font-size: 15px; }
 }
 
-/* Drum panel */
-:root {
-  --panel-drums: #2d2f36;
-  --panel-drums-deep: #16181c;
-}
-
-.drum-panel {
-  background: var(--panel-drums);
-  color: var(--text-light);
-  flex: 0 1 auto;
-}
-.drum-panel .player-head {
-  justify-content: space-between;
-}
-.drum-panel .player-label {
-  color: var(--text-light);
-  opacity: 0.55;
-}
-.drum-clear {
-  background: rgba(255,255,255,0.08);
-  color: var(--text-light);
-  border: 1px solid rgba(255,255,255,0.18);
-  padding: 4px 10px;
+/* View toggle button in each player's header (swaps melody ↔ companion) */
+.view-toggle {
+  background: rgba(0,0,0,0.18);
+  color: var(--text-dark);
+  border: 1px solid var(--border);
+  padding: 5px 12px;
   border-radius: 999px;
   font: inherit;
-  font-size: 10px;
-  letter-spacing: 1px;
+  font-size: 11px;
+  font-weight: 700;
   text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  opacity: 0.75;
+}
+.view-toggle:hover { opacity: 1; }
+.view-toggle.on { background: var(--text-dark); color: var(--text-light); opacity: 1; }
+
+/* Companion-track Clear button (bass/drums) */
+.companion-clear {
+  margin-left: auto;
+  background: rgba(0,0,0,0.18);
+  color: var(--text-dark);
+  border: 1px solid var(--border);
+  padding: 5px 12px;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
   cursor: pointer;
 }
-.drum-clear:hover { background: rgba(255,255,255,0.16); }
+.companion-clear:hover { background: rgba(0,0,0,0.28); }
 
-.drum-grid {
-  display: grid;
-  gap: 4px;
-  align-items: stretch;
-}
+/* Drum grid (lives inside player B; inherits .grid + .cell base styles) */
+.drum-grid { align-items: stretch; }
 .drum-label {
   display: flex;
   align-items: center;
@@ -215,82 +217,15 @@ body {
   font-weight: 700;
   letter-spacing: 1px;
   text-transform: uppercase;
-  color: rgba(255,255,255,0.55);
+  color: rgba(0,0,0,0.55);
 }
-.drum-cell {
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 4px;
-  cursor: pointer;
-  min-height: 30px;
-  position: relative;
-  transition: background 0.05s;
-  user-select: none;
-}
-.drum-cell:hover { background: rgba(255,255,255,0.12); }
-.drum-cell.on { background: var(--panel-a); border-color: var(--panel-a); }
-.drum-cell.playhead::after {
-  content: "";
-  position: absolute;
-  inset: 2px;
-  border: 2px solid rgba(255,255,255,0.35);
-  border-radius: 3px;
-  pointer-events: none;
-}
+#player-b .drum-cell.on { background: var(--text-dark); border-color: var(--text-dark); }
 
-#drum-toggle { background: rgba(255,255,255,0.08); color: var(--text-light); }
-#drum-toggle.on { background: var(--panel-a); color: var(--text-dark); opacity: 1; }
-
-/* Bass panel */
-:root {
-  --panel-bass: #5d3a72;
-  --panel-bass-deep: #3a2349;
-}
-
-.bass-panel {
-  background: var(--panel-bass);
-  color: var(--text-light);
-  flex: 0 1 auto;
-}
-.bass-panel .player-head {
-  justify-content: space-between;
-}
-.bass-panel .player-label {
-  color: var(--text-light);
-  opacity: 0.55;
-}
-.bass-grid {
-  min-height: 100px;
-}
-.bass-cell {
-  background: rgba(0,0,0,0.25);
-  border: 1px solid rgba(0,0,0,0.35);
-}
-.bass-cell:hover { background: rgba(0,0,0,0.35); }
-.bass-cell.on {
-  background: #f0c14b;
-  border-color: #f0c14b;
-}
-.bass-cell.playhead::after {
-  content: "";
-  position: absolute;
-  inset: 2px;
-  border: 2px solid rgba(255,255,255,0.3);
-  border-radius: 3px;
-  pointer-events: none;
-}
-.bass-panel .controls { color: var(--text-light); }
-
-#bass-toggle { background: rgba(255,255,255,0.08); color: var(--text-light); }
-#bass-toggle.on { background: var(--panel-bass); color: var(--text-light); opacity: 1; }
-
-@media (max-width: 640px) {
-  .bass-grid { min-height: 70px; }
-}
+/* Bass grid (lives inside player A; inherits .grid + .cell base styles) */
+#player-a .bass-cell.on { background: var(--text-dark); border-color: var(--text-dark); }
 
 @media (max-width: 640px) {
   .drum-label { font-size: 9px; padding-right: 6px; letter-spacing: 0.5px; }
-  .drum-cell { min-height: 22px; }
 }
 
 /* Toddler mode: just grids, big Play, and the 🎲 per player.
@@ -298,12 +233,11 @@ body {
 body.mode-toddler .controls > label,
 body.mode-toddler .controls > .toggle,
 body.mode-toddler .player-head,
+body.mode-toddler .bass-grid,
+body.mode-toddler .drum-grid,
+body.mode-toddler .companion-controls,
 body.mode-toddler #transport > label,
 body.mode-toddler #transport > #record,
-body.mode-toddler #transport > #drum-toggle,
-body.mode-toddler #transport > #bass-toggle,
-body.mode-toddler #player-drums,
-body.mode-toddler #player-bass,
 body.mode-toddler #transport > #status {
   display: none !important;
 }

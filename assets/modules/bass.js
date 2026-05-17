@@ -15,7 +15,6 @@ export class BassMachine {
     this.grid = Array(this.steps).fill(null);
     this.currentStep = 0;
     this.stepListeners = new Set();
-    this.muted = false;
 
     this.filter = new Tone.Filter({ type: "lowpass", frequency: 700, Q: 2 });
     this.gain = new Tone.Gain(Tone.dbToGain(-8));
@@ -38,7 +37,7 @@ export class BassMachine {
   _tick(time) {
     const step = this.currentStep;
     const noteIdx = this.grid[step];
-    if (!this.muted && noteIdx != null) {
+    if (noteIdx != null) {
       this.voice.triggerAttackRelease(BASS_SCALE[noteIdx], "8n", time, 0.9);
     }
     Tone.Draw.schedule(() => {
@@ -71,7 +70,6 @@ export class BassMachine {
 
   setVolumeDb(db) { this.gain.gain.rampTo(Tone.dbToGain(db), 0.05); }
   setFilter(hz) { this.filter.frequency.rampTo(hz, 0.05); }
-  setMuted(on) { this.muted = !!on; }
   clear() { this.grid.fill(null); }
 }
 
