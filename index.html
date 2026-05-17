@@ -19,6 +19,15 @@
         <label>Filter <input class="knob" type="range" min="100" max="8000" step="10" value="2000" data-param="filter"></label>
         <label>Res <input class="knob" type="range" min="0.5" max="15" step="0.1" value="1.5" data-param="res"></label>
         <label>Env <input class="knob" type="range" min="0" max="1" step="0.01" value="0" data-param="env"></label>
+        <label>Rate
+          <select class="wave" data-param="envRate">
+            <option value="4m">4m</option>
+            <option value="2m" selected>2m</option>
+            <option value="1m">1m</option>
+            <option value="2n">½</option>
+            <option value="4n">¼</option>
+          </select>
+        </label>
         <label>Decay <input class="knob" type="range" min="0.02" max="1.5" step="0.01" value="0.25" data-param="decay"></label>
         <label>Wave
           <select class="wave" data-param="wave">
@@ -26,6 +35,12 @@
             <option value="square">Square</option>
             <option value="triangle">Triangle</option>
             <option value="sine">Sine</option>
+          </select>
+        </label>
+        <label>Mode
+          <select class="wave" data-param="mode">
+            <option value="pluck" selected>Pluck</option>
+            <option value="sustain">Sustain</option>
           </select>
         </label>
         <button class="toggle" data-param="glide">Glide</button>
@@ -99,6 +114,15 @@
         <label>Filter <input class="knob" type="range" min="100" max="8000" step="10" value="2000" data-param="filter"></label>
         <label>Res <input class="knob" type="range" min="0.5" max="15" step="0.1" value="1.5" data-param="res"></label>
         <label>Env <input class="knob" type="range" min="0" max="1" step="0.01" value="0" data-param="env"></label>
+        <label>Rate
+          <select class="wave" data-param="envRate">
+            <option value="4m">4m</option>
+            <option value="2m" selected>2m</option>
+            <option value="1m">1m</option>
+            <option value="2n">½</option>
+            <option value="4n">¼</option>
+          </select>
+        </label>
         <label>Decay <input class="knob" type="range" min="0.02" max="1.5" step="0.01" value="0.25" data-param="decay"></label>
         <label>Wave
           <select class="wave" data-param="wave">
@@ -106,6 +130,12 @@
             <option value="square">Square</option>
             <option value="triangle">Triangle</option>
             <option value="sine">Sine</option>
+          </select>
+        </label>
+        <label>Mode
+          <select class="wave" data-param="mode">
+            <option value="pluck" selected>Pluck</option>
+            <option value="sustain">Sustain</option>
           </select>
         </label>
         <button class="toggle" data-param="glide">Glide</button>

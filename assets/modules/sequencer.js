@@ -60,6 +60,10 @@ export class Sequencer {
       Tone.Destination
     );
 
+    this.mode = "pluck";
+    this.baseWave = "sawtooth";
+    this.duration = "16n";
+
     this.loop = new Tone.Loop((time) => this._tick(time), "16n");
     this.loop.start(0);
   }
@@ -68,7 +72,7 @@ export class Sequencer {
     const step = this.currentStep;
     const noteIdx = this.grid[step];
     if (noteIdx != null) {
-      this.voice.triggerAttackRelease(SCALE[noteIdx], "16n", time, 0.9);
+      this.voice.triggerAttackRelease(SCALE[noteIdx], this.duration, time, 0.9);
     }
     Tone.Draw.schedule(() => {
       for (const fn of this.stepListeners) fn(step);
@@ -93,9 +97,35 @@ export class Sequencer {
   setFilter(hz) { this.filter.frequency.rampTo(hz, 0.05); }
   setResonance(q) { this.filter.Q.rampTo(q, 0.05); }
   setDecay(seconds) { this.voice.envelope.decay = seconds; }
-  setWave(type) { this.voice.oscillator.type = type; }
+  setWave(type) {
+    this.baseWave = type;
+    this.voice.oscillator.type = this.mode === "sustain" ? `fat${type}` : type;
+    if (this.mode === "sustain" && "count" in this.voice.oscillator) {
+      this.voice.oscillator.count = 3;
+      this.voice.oscillator.spread = 30;
+    }
+  }
   setVolumeDb(db) { this.gain.gain.rampTo(Tone.dbToGain(db), 0.05); }
   setGlide(on) { this.voice.portamento = on ? 0.08 : 0; }
+  setMode(mode) {
+    if (mode !== "pluck" && mode !== "sustain") return;
+    this.mode = mode;
+    this.voice.oscillator.type = mode === "sustain" ? `fat${this.baseWave}` : this.baseWave;
+    if (mode === "sustain") {
+      if ("count" in this.voice.oscillator) {
+        this.voice.oscillator.count = 3;
+        this.voice.oscillator.spread = 30;
+      }
+      Object.assign(this.voice.envelope, { sustain: 0.85, release: 1.5 });
+      this.duration = "4n";
+    } else {
+      Object.assign(this.voice.envelope, { sustain: 0, release: 0.08 });
+      this.duration = "16n";
+    }
+  }
+  setEnvRate(subdivision) {
+    this.envFilter.frequency.value = Tone.Time(subdivision).toFrequency();
+  }
   setCrush(on) { this.crushOn = !!on; this._applyCrush(); }
   setCrushType(type) {
     if (!(type in this.crushers)) return;

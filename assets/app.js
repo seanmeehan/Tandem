@@ -91,6 +91,8 @@ function applyParam(seq, param, value) {
   else if (param === "glide") seq.setGlide(!!value);
   else if (param === "crush") seq.setCrush(!!value);
   else if (param === "crushType") seq.setCrushType(value);
+  else if (param === "mode") seq.setMode(value);
+  else if (param === "envRate") seq.setEnvRate(value);
 }
 
 function wireControls(playerKey) {
