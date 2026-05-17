@@ -8,6 +8,18 @@
 </head>
 <body>
   <main id="board">
+    <section class="player bass-panel" id="player-bass" hidden>
+      <div class="player-head">
+        <span class="player-label">Bass</span>
+        <button id="bass-clear" type="button" class="drum-clear" title="Clear pattern">Clear</button>
+      </div>
+      <div class="grid bass-grid" id="bass-grid"></div>
+      <div class="controls">
+        <label>Cutoff <input class="bass-knob" type="range" min="100" max="2000" step="10" value="700" data-param="filter"></label>
+        <label>Vol <input class="bass-knob" type="range" min="-30" max="0" step="0.1" value="-8" data-param="vol"></label>
+      </div>
+    </section>
+
     <section class="player rotated" id="player-a">
       <div class="player-head">
         <span class="player-label">Player A</span>
@@ -29,6 +41,7 @@
         <button class="toggle" data-param="glide">Glide</button>
         <button class="toggle" data-param="crush">Crush</button>
         <label>Vol <input class="knob" type="range" min="-30" max="0" step="0.1" value="-10" data-param="vol"></label>
+        <button class="randomize" data-action="randomize" title="Randomize sound" aria-label="Randomize sound">🎲</button>
       </div>
     </section>
 
@@ -51,6 +64,8 @@
           <option value="32">32</option>
         </select>
       </label>
+      <button id="bass-toggle" class="toggle" type="button">🎸 Bass</button>
+      <button id="drum-toggle" class="toggle" type="button">🥁 Drums</button>
       <span id="status">stopped</span>
     </section>
 
@@ -75,6 +90,18 @@
         <button class="toggle" data-param="glide">Glide</button>
         <button class="toggle" data-param="crush">Crush</button>
         <label>Vol <input class="knob" type="range" min="-30" max="0" step="0.1" value="-10" data-param="vol"></label>
+        <button class="randomize" data-action="randomize" title="Randomize sound" aria-label="Randomize sound">🎲</button>
+      </div>
+    </section>
+
+    <section class="player drum-panel" id="player-drums" hidden>
+      <div class="player-head">
+        <span class="player-label">Drums</span>
+        <button id="drum-clear" type="button" class="drum-clear" title="Clear pattern">Clear</button>
+      </div>
+      <div class="drum-grid" id="drum-grid"></div>
+      <div class="controls">
+        <label>Vol <input class="drum-knob" type="range" min="-30" max="0" step="0.1" value="-8"></label>
       </div>
     </section>
   </main>
