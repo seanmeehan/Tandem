@@ -333,21 +333,27 @@ function attachBassPlayhead() {
   });
 }
 
+function applyBassParam(param, value) {
+  if (!bass) return;
+  if (param === "filter") bass.setFilter(Number(value));
+  else if (param === "vol") bass.setVolumeDb(Number(value));
+  else if (param === "mod") bass.setMod(Number(value));
+  else if (param === "modRate") bass.setModRate(value);
+  else if (param === "mode") bass.setMode(value);
+}
+
 function applyBassControls() {
   if (!bass) return;
   bassKnobs.forEach((el) => {
-    const v = Number(el.value);
-    if (el.dataset.param === "filter") bass.setFilter(v);
-    else if (el.dataset.param === "vol") bass.setVolumeDb(v);
+    const v = el.tagName === "SELECT" ? el.value : Number(el.value);
+    applyBassParam(el.dataset.param, v);
   });
 }
 
 bassKnobs.forEach((el) => {
   el.addEventListener("input", () => {
-    if (!bass) return;
-    const v = Number(el.value);
-    if (el.dataset.param === "filter") bass.setFilter(v);
-    else if (el.dataset.param === "vol") bass.setVolumeDb(v);
+    const v = el.tagName === "SELECT" ? el.value : Number(el.value);
+    applyBassParam(el.dataset.param, v);
   });
 });
 

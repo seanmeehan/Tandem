@@ -39,7 +39,23 @@
         <button class="randomize" data-action="randomize" title="Randomize sound" aria-label="Randomize sound">🎲</button>
       </div>
       <div class="controls companion-controls bass-controls" hidden>
+        <label>Mode
+          <select class="bass-knob" data-param="mode">
+            <option value="pluck" selected>Pluck</option>
+            <option value="sustain">Sustain</option>
+          </select>
+        </label>
         <label>Cutoff <input class="bass-knob" type="range" min="100" max="2000" step="10" value="700" data-param="filter"></label>
+        <label>Mod <input class="bass-knob" type="range" min="0" max="1" step="0.01" value="0" data-param="mod"></label>
+        <label>Rate
+          <select class="bass-knob" data-param="modRate">
+            <option value="4m">4m</option>
+            <option value="2m" selected>2m</option>
+            <option value="1m">1m</option>
+            <option value="2n">½</option>
+            <option value="4n">¼</option>
+          </select>
+        </label>
         <label>Vol <input class="bass-knob" type="range" min="-30" max="0" step="0.1" value="-8" data-param="vol"></label>
         <button id="bass-clear" type="button" class="companion-clear">Clear</button>
       </div>
